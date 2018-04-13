@@ -1018,7 +1018,17 @@ THREE.ColladaLoader.prototype = {
 
 		function getImage( id ) {
 
-			return getBuild( library.images[ id ], buildImage );
+			var data = library.images[ id ];
+
+			if ( data !== undefined ) {
+
+				return getBuild( data, buildImage );
+
+			}
+
+			console.warn( 'THREE.ColladaLoader: Couldn\'t find image with ID:', id );
+
+			return null;
 
 		}
 
@@ -1459,7 +1469,7 @@ THREE.ColladaLoader.prototype = {
 			function getTexture( textureObject ) {
 
 				var sampler = effect.profile.samplers[ textureObject.id ];
-				var image;
+				var image = null;
 
 				// get image
 
@@ -1477,7 +1487,7 @@ THREE.ColladaLoader.prototype = {
 
 				// create texture if image is avaiable
 
-				if ( image !== undefined ) {
+				if ( image !== null ) {
 
 					var texture = textureLoader.load( image );
 
@@ -1504,7 +1514,7 @@ THREE.ColladaLoader.prototype = {
 
 				} else {
 
-					console.error( 'THREE.ColladaLoader: Unable to load texture with ID:', textureObject.id );
+					console.warn( 'THREE.ColladaLoader: Couldn\'t create texture with ID:', textureObject.id );
 
 					return null;
 
@@ -1529,12 +1539,11 @@ THREE.ColladaLoader.prototype = {
 						if ( parameter.texture ) material.specularMap = getTexture( parameter.texture );
 						break;
 					case 'shininess':
-						if ( parameter.float && material.shininess )
-							material.shininess = parameter.float;
+						if ( parameter.float && material.shininess ) material.shininess = parameter.float;
 						break;
 					case 'emission':
-						if ( parameter.color && material.emissive )
-							material.emissive.fromArray( parameter.color );
+						if ( parameter.color && material.emissive ) material.emissive.fromArray( parameter.color );
+						if ( parameter.texture ) material.emissiveMap = getTexture( parameter.texture );
 						break;
 
 				}
@@ -1574,7 +1583,8 @@ THREE.ColladaLoader.prototype = {
 
 				if ( transparent.data.texture ) {
 
-					material.alphaMap = getTexture( transparent.data.texture );
+					// we do not set an alpha map (see #13792)
+
 					material.transparent = true;
 
 				} else {
