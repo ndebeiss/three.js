@@ -38,7 +38,6 @@ THREE.SVGLoader.prototype = {
 					break;
 
 				case 'g':
-					style = parseStyle( node, style );
 					break;
 
 				case 'path':
@@ -480,10 +479,25 @@ THREE.SVGLoader.prototype = {
 
 			style = Object.assign( {}, style ); // clone style
 
-			if ( node.hasAttribute( 'fill' ) ) style.fill = node.getAttribute( 'fill' );
-			if ( node.style.fill !== '' ) style.fill = node.style.fill;
+			var fill = getFill( node );
+			if ( fill ) style.fill = fill;
 
 			return style;
+
+		}
+
+		function getFill( node ) {
+
+			if ( node.hasAttribute( 'fill' ) ) return node.getAttribute( 'fill' );
+			if ( node.style.fill !== '' ) return node.style.fill;
+
+			if ( node.parentNode ) {
+
+				return getFill( node.parentNode );
+
+			}
+
+			return undefined;
 
 		}
 
