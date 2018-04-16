@@ -28,7 +28,7 @@ THREE.SVGLoader.prototype = {
 
 	parse: function ( text ) {
 
-		function parseNode( node, style ) {
+		function parseNode( node ) {
 
 			if ( node.nodeType !== 1 ) return;
 
@@ -41,37 +41,37 @@ THREE.SVGLoader.prototype = {
 					break;
 
 				case 'path':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parsePathNode( node, style ) );
 					break;
 
 				case 'rect':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parseRectNode( node, style ) );
 					break;
 
 				case 'polygon':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parsePolygonNode( node, style ) );
 					break;
 
 				case 'polyline':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parsePolylineNode( node, style ) );
 					break;
 
 				case 'circle':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parseCircleNode( node, style ) );
 					break;
 
 				case 'ellipse':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parseEllipseNode( node, style ) );
 					break;
 
 				case 'line':
-					style = parseStyle( node, style );
+					var style = parseStyle( node );
 					if ( style.fill !== 'none' ) paths.push( parseLineNode( node, style ) );
 					break;
 
@@ -84,7 +84,7 @@ THREE.SVGLoader.prototype = {
 
 			for ( var i = 0; i < nodes.length; i ++ ) {
 
-				parseNode( nodes[ i ], style );
+				parseNode( nodes[ i ] );
 
 			}
 
@@ -475,14 +475,9 @@ THREE.SVGLoader.prototype = {
 
 		//
 
-		function parseStyle( node, style ) {
+		function parseStyle( node ) {
 
-			style = Object.assign( {}, style ); // clone style
-
-			var fill = getFill( node );
-			if ( fill ) style.fill = fill;
-
-			return style;
+			return { fill: getFill( node ) };
 
 		}
 
@@ -497,7 +492,7 @@ THREE.SVGLoader.prototype = {
 
 			}
 
-			return undefined;
+			return '#000';
 
 		}
 
@@ -528,7 +523,7 @@ THREE.SVGLoader.prototype = {
 		var paths = [];
 		var xml = new DOMParser().parseFromString( text, 'image/svg+xml' ); // application/xml
 
-		parseNode( xml.documentElement, { fill: '#000' } );
+		parseNode( xml.documentElement );
 
 		return paths;
 
