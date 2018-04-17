@@ -28,7 +28,7 @@ THREE.SVGLoader.prototype = {
 
 	parse: function ( text ) {
 
-		function parseNode( node ) {
+		function parseNode( node, style ) {
 
 			if ( node.nodeType !== 1 ) return;
 
@@ -38,40 +38,41 @@ THREE.SVGLoader.prototype = {
 					break;
 
 				case 'g':
+					style = parseStyle( node, style );
 					break;
 
 				case 'path':
-					var style = parseStyle( node );
-					if ( style.fill !== 'none' ) paths.push( parsePathNode( node, style ) );
+					style = parseStyle( node, style );
+					if ( style.fill !== 'none' && node.hasAttribute( 'd' ) ) paths.push( parsePathNode( node, style ) );
 					break;
 
 				case 'rect':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parseRectNode( node, style ) );
 					break;
 
 				case 'polygon':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parsePolygonNode( node, style ) );
 					break;
 
 				case 'polyline':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parsePolylineNode( node, style ) );
 					break;
 
 				case 'circle':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parseCircleNode( node, style ) );
 					break;
 
 				case 'ellipse':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parseEllipseNode( node, style ) );
 					break;
 
 				case 'line':
-					var style = parseStyle( node );
+					style = parseStyle( node, style );
 					if ( style.fill !== 'none' ) paths.push( parseLineNode( node, style ) );
 					break;
 
@@ -84,7 +85,7 @@ THREE.SVGLoader.prototype = {
 
 			for ( var i = 0; i < nodes.length; i ++ ) {
 
-				parseNode( nodes[ i ] );
+				parseNode( nodes[ i ], style );
 
 			}
 
@@ -104,7 +105,7 @@ THREE.SVGLoader.prototype = {
 
 			var commands = d.match( /[a-df-z][^a-df-z]*/ig );
 
-			for ( var i = 0; i < commands.length; i ++ ) {
+			for ( var i = 0, l = commands.length; i < l; i ++ ) {
 
 				var command = commands[ i ];
 
@@ -115,51 +116,62 @@ THREE.SVGLoader.prototype = {
 
 					case 'M':
 						var numbers = parseFloats( data );
-						point.fromArray( numbers );
-						control.x = point.x;
-						control.y = point.y;
-						path.moveTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 2 ) {
+							point.x = numbers[ j + 0 ];
+							point.y = numbers[ j + 1 ];
+							control.x = point.x;
+							control.y = point.y;
+							path.moveTo( point.x, point.y );
+						}
 						break;
 
 					case 'H':
 						var numbers = parseFloats( data );
-						point.x = numbers[ 0 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j ++ ) {
+							point.x = numbers[ j ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'V':
 						var numbers = parseFloats( data );
-						point.y = numbers[ 0 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j ++ ) {
+							point.y = numbers[ j ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'L':
 						var numbers = parseFloats( data );
-						point.x = numbers[ 0 ];
-						point.y = numbers[ 1 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 2 ) {
+							point.x = numbers[ j + 0 ];
+							point.y = numbers[ j + 1 ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'C':
 						var numbers = parseFloats( data );
-						path.bezierCurveTo(
-							numbers[ 0 ],
-							numbers[ 1 ],
-							numbers[ 2 ],
-							numbers[ 3 ],
-							numbers[ 4 ],
-							numbers[ 5 ]
-						);
-						control.x = numbers[ 2 ];
-						control.y = numbers[ 3 ];
-						point.x = numbers[ 4 ];
-						point.y = numbers[ 5 ];
+						for ( var j = 0, jl = numbers.length; j < jl; j += 6 ) {
+							path.bezierCurveTo(
+								numbers[ j + 0 ],
+								numbers[ j + 1 ],
+								numbers[ j + 2 ],
+								numbers[ j + 3 ],
+								numbers[ j + 4 ],
+								numbers[ j + 5 ]
+							);
+							control.x = numbers[ j + 2 ];
+							control.y = numbers[ j + 3 ];
+							point.x = numbers[ j + 4 ];
+							point.y = numbers[ j + 5 ];
+						}
 						break;
 
 					case 'S':
@@ -212,50 +224,60 @@ THREE.SVGLoader.prototype = {
 
 					case 'm':
 						var numbers = parseFloats( data );
-						point.x += numbers[ 0 ];
-						point.y += numbers[ 1 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.moveTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 2 ) {
+							point.x += numbers[ j + 0 ];
+							point.y += numbers[ j + 1 ];
+							control.x = point.x;
+							control.y = point.y;
+							path.moveTo( point.x, point.y );
+						}
 						break;
 
 					case 'h':
 						var numbers = parseFloats( data );
-						point.x += numbers[ 0 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j ++ ) {
+							point.x += numbers[ j ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'v':
 						var numbers = parseFloats( data );
-						point.y += numbers[ 0 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j ++ ) {
+							point.y += numbers[ j ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'l':
 						var numbers = parseFloats( data );
-						point.x += numbers[ 0 ];
-						point.y += numbers[ 1 ];
-						control.x = point.x;
-						control.y = point.y;
-						path.lineTo( point.x, point.y );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 2 ) {
+							point.x += numbers[ j + 0 ];
+							point.y += numbers[ j + 1 ];
+							control.x = point.x;
+							control.y = point.y;
+							path.lineTo( point.x, point.y );
+						}
 						break;
 
 					case 'c':
 						var numbers = parseFloats( data );
-						path.bezierCurveTo(
-							point.x + numbers[ 0 ],
-							point.y + numbers[ 1 ],
-							point.x + numbers[ 2 ],
-							point.y + numbers[ 3 ],
-							point.x + numbers[ 4 ],
-							point.y + numbers[ 5 ]
-						);
-						point.x += numbers[ 4 ];
-						point.y += numbers[ 5 ];
+						for ( var j = 0, jl = numbers.length; j < jl; j += 6 ) {
+							path.bezierCurveTo(
+								point.x + numbers[ j + 0 ],
+								point.y + numbers[ j + 1 ],
+								point.x + numbers[ j + 2 ],
+								point.y + numbers[ j + 3 ],
+								point.x + numbers[ j + 4 ],
+								point.y + numbers[ j + 5 ]
+							);
+							point.x += numbers[ j + 4 ];
+							point.y += numbers[ j + 5 ];
+						}
 						break;
 
 					case 's':
@@ -314,9 +336,11 @@ THREE.SVGLoader.prototype = {
 						break;
 
 					default:
-						console.log( command );
+						console.warn( command );
 
 				}
+
+				// console.log( type, parseFloats( data ), parseFloats( data ).length  )
 
 			}
 
@@ -475,24 +499,14 @@ THREE.SVGLoader.prototype = {
 
 		//
 
-		function parseStyle( node ) {
+		function parseStyle( node, style ) {
 
-			return { fill: getFill( node ) };
+			style = Object.assign( {}, style ); // clone style
 
-		}
+			if ( node.hasAttribute( 'fill' ) ) style.fill = node.getAttribute( 'fill' );
+			if ( node.style.fill !== '' ) style.fill = node.style.fill;
 
-		function getFill( node ) {
-
-			if ( node.hasAttribute( 'fill' ) ) return node.getAttribute( 'fill' );
-			if ( node.style.fill !== '' ) return node.style.fill;
-
-			if ( node.parentNode ) {
-
-				return getFill( node.parentNode );
-
-			}
-
-			return '#000';
+			return style;
 
 		}
 
@@ -520,10 +534,23 @@ THREE.SVGLoader.prototype = {
 
 		//
 
+		console.log( 'THREE.SVGLoader' );
+
 		var paths = [];
+
+		console.time( 'THREE.SVGLoader: DOMParser' );
+
 		var xml = new DOMParser().parseFromString( text, 'image/svg+xml' ); // application/xml
 
-		parseNode( xml.documentElement );
+		console.timeEnd( 'THREE.SVGLoader: DOMParser' );
+
+		console.time( 'THREE.SVGLoader: Parse' );
+
+		parseNode( xml.documentElement, { fill: '#000' } );
+
+		// console.log( paths );
+
+		console.timeEnd( 'THREE.SVGLoader: Parse' );
 
 		return paths;
 
