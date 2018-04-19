@@ -43,37 +43,37 @@ THREE.SVGLoader.prototype = {
 
 				case 'path':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' && node.hasAttribute( 'd' ) ) paths.push( parsePathNode( node, style ) );
+					if ( node.hasAttribute( 'd' ) && isVisible( style ) ) paths.push( parsePathNode( node, style ) );
 					break;
 
 				case 'rect':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parseRectNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parseRectNode( node, style ) );
 					break;
 
 				case 'polygon':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parsePolygonNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parsePolygonNode( node, style ) );
 					break;
 
 				case 'polyline':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parsePolylineNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parsePolylineNode( node, style ) );
 					break;
 
 				case 'circle':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parseCircleNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parseCircleNode( node, style ) );
 					break;
 
 				case 'ellipse':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parseEllipseNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parseEllipseNode( node, style ) );
 					break;
 
 				case 'line':
 					style = parseStyle( node, style );
-					if ( style.fill !== 'none' ) paths.push( parseLineNode( node, style ) );
+					if ( isVisible( style ) ) paths.push( parseLineNode( node, style ) );
 					break;
 
 				default:
@@ -220,7 +220,19 @@ THREE.SVGLoader.prototype = {
 						point.y = numbers[ 1 ];
 						break;
 
-					// case 'A': break;
+					case 'A':
+						console.warn( command );
+						var numbers = parseFloats( data );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 7 ) {
+							// TODO
+							point.x = numbers[ j + 5 ];
+							point.y = numbers[ j + 6 ];
+							control.x = point.x;
+							control.y = point.y;
+						}
+						break;
+
+					//
 
 					case 'm':
 						var numbers = parseFloats( data );
@@ -328,7 +340,19 @@ THREE.SVGLoader.prototype = {
 						point.y = point.y + numbers[ 1 ];
 						break;
 
-					// case 'a': break;
+					case 'a':
+						console.warn( command );
+						var numbers = parseFloats( data );
+						for ( var j = 0, jl = numbers.length; j < jl; j += 7 ) {
+							// TODO
+							point.x += numbers[ j + 5 ];
+							point.y += numbers[ j + 6 ];
+							control.x = point.x;
+							control.y = point.y;
+						}
+						break;
+
+					//
 
 					case 'Z':
 					case 'z':
@@ -507,6 +531,12 @@ THREE.SVGLoader.prototype = {
 			if ( node.style.fill !== '' ) style.fill = node.style.fill;
 
 			return style;
+
+		}
+
+		function isVisible( style ) {
+
+			return style.fill !== 'none' && style.fill !== 'transparent';
 
 		}
 
