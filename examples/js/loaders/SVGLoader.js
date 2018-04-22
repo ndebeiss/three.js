@@ -223,9 +223,11 @@ THREE.SVGLoader.prototype = {
 					case 'A':
 						var numbers = parseFloats( data );
 						for ( var j = 0, jl = numbers.length; j < jl; j += 7 ) {
-							var radius = { x : numbers[ j ], y : numbers[ j + 1 ] };
-							var end = { x : numbers[ j + 5 ], y : numbers[ j + 6 ] };
+
+							var radius = { x: numbers[ j ], y: numbers[ j + 1 ] };
+							var end = { x: numbers[ j + 5 ], y: numbers[ j + 6 ] };
 							svgEllipsisToThreeEllipsis( path, control, radius, numbers[ j + 2 ], numbers[ j + 3 ], numbers[ j + 4 ], end );
+
 						}
 						break;
 
@@ -259,7 +261,7 @@ THREE.SVGLoader.prototype = {
 							control.x = point.x;
 							control.y = point.y;
 							path.lineTo( point.x, point.y );
-						}
+						} 
 						break;
 
 					case 'l':
@@ -379,17 +381,16 @@ THREE.SVGLoader.prototype = {
 		 * aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation
 		 */
 		function svgEllipsisToThreeEllipsis( path, start, radius, x_axis_rotation, large_arc_flag, sweep_flag, end ) {
+			
 			//F.6.6 Correction of out-of-range radii
 			//Step 2: Ensure radii are positive
 			var rX = Math.abs( radius.x );
 			var rY = Math.abs( radius.y );
 			//Step 3: Ensure radii are large enough looks like over engineering
-			
 			// Step 1: Compute (x1′, y1′)
 			var midDist = new THREE.Vector2().subVectors( start, end ).multiplyScalar( 0.5 );
 			var x1p = Math.cos( x_axis_rotation ) * midDist.x + Math.sin( x_axis_rotation ) * midDist.y;
 			var y1p = - Math.sin( x_axis_rotation ) * midDist.x + Math.cos( x_axis_rotation ) * midDist.y;
-			
 			// Step 2: Compute (cx′, cy′)
 			var rxs = rX * rX;
 			var rys = rY * rY;
@@ -398,11 +399,10 @@ THREE.SVGLoader.prototype = {
 			var dq = ( rxs * y1ps + rys * x1ps );
 			var pq = ( rxs * rys - dq ) / dq;
 			var q = Math.sqrt( pq );
-			if (large_arc_flag === sweep_flag)
-				q = -q;
+			if ( large_arc_flag === sweep_flag ) q = - q;
 			var cxp = q * rX * y1p / rY;
 			var cyp = - q * rY * x1p / rX;
-			
+
 			// Step 3: Compute (cx, cy) from (cx′, cy′)
 			var cx = Math.cos( x_axis_rotation ) * cxp - Math.sin( x_axis_rotation ) * cyp + ( start.x + end.x ) / 2;
 			var cy = Math.sin( x_axis_rotation ) * cxp + Math.cos( x_axis_rotation ) * cyp + ( start.y + end.y ) / 2;
@@ -410,9 +410,10 @@ THREE.SVGLoader.prototype = {
 			// Step 4: Compute θ1 and Δθ
 			var startAngle = new THREE.Vector2( ( x1p - cxp ) / rX, ( y1p - cyp ) / rY ).angle();
 			var endAngle = new THREE.Vector2( ( - x1p - cxp ) / rX, ( - y1p - cyp ) / rY ).angle();
-			if ( !sweep_flag ) endAngle -= 2 * Math.PI;
+			if ( ! sweep_flag ) endAngle -= 2 * Math.PI;
 
 			path.currentPath.absellipse( cx, cy, rX, rY, startAngle, endAngle, endAngle > startAngle, x_axis_rotation );
+
 		}
 
 		/*
