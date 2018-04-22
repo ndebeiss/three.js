@@ -46,7 +46,7 @@
 		<div id="example">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="-200 -200 400 400" width="400" height="400" id="example_svg" style="fill: purple">
 				<g fill="cyan">
-					<path id="path" style="fill: yellow; stroke: red" d="M-200,-200L -180 , -180 H-170V -190z"/>
+					<path id="path" style="fill: yellow; stroke: red" d="M-200,-200L -180 , -180 H-170V -190 A 100, 100, 0.4, 1, 1, -50, -110 z"/>
 					<ellipse id="ellipse" cx="50" cy="-150" rx="50" ry="30" />
 				</g>
 				<g>
@@ -90,6 +90,7 @@
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xb0b0b0 );
+				scene.rotation.x = Math.PI;
 
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
 				camera.position.set( 0, 0, 500 );
